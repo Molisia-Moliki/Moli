@@ -5,29 +5,27 @@ import yt_dlp
 from dotenv import load_dotenv
 import os
 
-# Ładujemy zmienne środowiskowe z .env
-load_dotenv()
+# Ładujemy token ze zmiennych środowiskowych
+load_dotenv()  # dla lokalnego .env
 TOKEN = os.getenv('TOKEN')
 if not TOKEN:
-    raise ValueError("Brak tokena w zmiennych środowiskowych!")
+    raise ValueError("Brak tokena! Dodaj go do .env lub Secrets Replit.")
+
+PREFIX = '/'  # prefiks komend
 
 intents = discord.Intents.default()
 intents.message_content = True
 intents.voice_states = True
 
-bot = commands.Bot(command_prefix="/", intents=intents)
+bot = commands.Bot(command_prefix=PREFIX, intents=intents)
 
-# Kolejka muzyczna: {guild_id: [url1, url2, ...]}
 queues = {}
-
 FFMPEG_OPTIONS = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
     'options': '-vn'
 }
-
 YDL_OPTIONS = {'format': 'bestaudio'}
 
-# Funkcja odtwarzania kolejki
 async def play_queue(ctx, guild_id):
     queue = queues[guild_id]
     while queue:
@@ -52,11 +50,9 @@ async def play_queue(ctx, guild_id):
 @bot.command()
 async def play(ctx, url: str):
     if not ctx.author.voice:
-        await ctx.send("Musisz być na kanale głosowym!")
-        return
+        return await ctx.send("Musisz być na kanale głosowym!")
 
     channel = ctx.author.voice.channel
-
     if ctx.guild.id not in queues:
         queues[ctx.guild.id] = []
 
